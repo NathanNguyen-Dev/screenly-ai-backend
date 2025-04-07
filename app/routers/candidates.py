@@ -74,9 +74,8 @@ def create_candidate_for_job( # Removed async
 
                 logger.info(f"Candidate {created_candidate_record['id']} created successfully for job {job_id} by user {current_user.uid}")
 
-                # Convert DB record (DictRow) to Pydantic model
-                # Pydantic V2 uses model_validate for dicts
-                return CandidateRead.model_validate(created_candidate_record)
+                # Convert DB record (DictRow) to dict before passing to Pydantic
+                return CandidateRead.model_validate(dict(created_candidate_record))
 
     except psycopg2.errors.ForeignKeyViolation:
          # Catch specific error if the job_id doesn't exist
