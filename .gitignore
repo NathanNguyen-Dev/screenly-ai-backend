@@ -1,0 +1,5 @@
+.env
+.json
+node_modules
+screeny-peach-firebase-adminsdk-fbsvc-6aafdb8512.json
+__pycache__
