@@ -39,8 +39,8 @@ class JobRead(JobBase):
     screening_link: Optional[str] = Field(None, description="Public link for screening (if applicable)")
 
     class Config:
-        orm_mode = True
-        use_enum_values = True # Ensure Enum values are used in serialization
+        from_attributes = True
+        use_enum_values = True
 
 # Model for updating a job (optional, can add later if needed)
 # class JobUpdate(BaseModel):

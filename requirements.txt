@@ -3,7 +3,5 @@ uvicorn[standard]
 python-dotenv
 firebase-admin
 python-jose[cryptography]
-psycopg2-binary  # For connecting to Supabase/Postgres, use psycopg2-binary for ease of installation
-# supabase        # Optional: Use Supabase Python client if preferred over direct DB connection
-# sqlalchemy      # Optional: Use if you prefer an ORM
-# asyncpg         # Optional: Alternative async driver for Postgres (use instead of psycopg2 if fully async) 
+psycopg2-binary 
+"pydantic[email]"
