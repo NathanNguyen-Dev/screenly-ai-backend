@@ -4,4 +4,4 @@ python-dotenv
 firebase-admin
 python-jose[cryptography]
 psycopg2-binary 
-"pydantic[email]"
+pydantic[email]
