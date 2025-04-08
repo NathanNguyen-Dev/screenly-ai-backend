@@ -2,11 +2,11 @@ import uvicorn
 import os
 from dotenv import load_dotenv
 import logging
+import json # Needed for parsing potential JSON strings if used
 
 # Firebase Admin SDK
 import firebase_admin
 from firebase_admin import credentials
-# import json # No longer needed for this method
 
 # Import the auth router
 from app.routers import auth, jobs, candidates
@@ -19,23 +19,43 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 # Note: .env is still useful for FRONTEND_URL, DATABASE_URL etc.
 
-# --- Firebase Initialization (Using File Path from Env Var - Local Dev Only!) ---
+# --- Firebase Initialization (Using Environment Variables) ---
 firebase_initialized = False
 try:
-    # Read the path to your service account key file from env var
-    SERVICE_ACCOUNT_PATH = os.getenv("FIREBASE_SERVICE_ACCOUNT_PATH")
-    if not SERVICE_ACCOUNT_PATH:
-        raise ValueError("FIREBASE_SERVICE_ACCOUNT_PATH environment variable not set.")
+    # Check for essential Firebase credential variables
+    required_vars = [
+        'FIREBASE_TYPE', 'FIREBASE_PROJECT_ID', 'FIREBASE_PRIVATE_KEY_ID',
+        'FIREBASE_PRIVATE_KEY', 'FIREBASE_CLIENT_EMAIL', 'FIREBASE_CLIENT_ID',
+        'FIREBASE_AUTH_URI', 'FIREBASE_TOKEN_URI', 'FIREBASE_AUTH_PROVIDER_X509_CERT_URL',
+        'FIREBASE_CLIENT_X509_CERT_URL'
+    ]
+    if not all(os.getenv(var) for var in required_vars):
+        missing = [var for var in required_vars if not os.getenv(var)]
+        raise ValueError(f"Missing required Firebase environment variables: {', '.join(missing)}")
 
-    # Check if file exists before attempting to use it
-    if not os.path.exists(SERVICE_ACCOUNT_PATH):
-        raise FileNotFoundError(f"Service account key file not found at path specified by FIREBASE_SERVICE_ACCOUNT_PATH: {SERVICE_ACCOUNT_PATH}")
-        
-    cred = credentials.Certificate(SERVICE_ACCOUNT_PATH)
+    # Construct the credential dictionary from environment variables
+    private_key = os.getenv('FIREBASE_PRIVATE_KEY').replace('\\n', '\n') # Replace literal \n with actual newlines
+    
+    firebase_credentials = {
+        "type": os.getenv('FIREBASE_TYPE'),
+        "project_id": os.getenv('FIREBASE_PROJECT_ID'),
+        "private_key_id": os.getenv('FIREBASE_PRIVATE_KEY_ID'),
+        "private_key": private_key,
+        "client_email": os.getenv('FIREBASE_CLIENT_EMAIL'),
+        "client_id": os.getenv('FIREBASE_CLIENT_ID'),
+        "auth_uri": os.getenv('FIREBASE_AUTH_URI'),
+        "token_uri": os.getenv('FIREBASE_TOKEN_URI'),
+        "auth_provider_x509_cert_url": os.getenv('FIREBASE_AUTH_PROVIDER_X509_CERT_URL'),
+        "client_x509_cert_url": os.getenv('FIREBASE_CLIENT_X509_CERT_URL'),
+        # Add universe_domain if needed and set in env vars
+        # "universe_domain": os.getenv('FIREBASE_UNIVERSE_DOMAIN', 'googleapis.com') 
+    }
+
+    cred = credentials.Certificate(firebase_credentials)
 
     if not firebase_admin._apps:
         firebase_admin.initialize_app(cred)
-        logger.info(f"Firebase Admin SDK initialized successfully using file path from env var: {SERVICE_ACCOUNT_PATH}")
+        logger.info("Firebase Admin SDK initialized successfully using environment variables.")
         firebase_initialized = True
     else:
         logger.info("Firebase Admin SDK already initialized.")
@@ -43,10 +63,9 @@ try:
 
 except ValueError as e:
      logger.error(f"CRITICAL: Configuration error - {e}")
-except FileNotFoundError as e:
-     logger.error(f"CRITICAL: {e}. Make sure the service account file exists at the specified path.")
+# Removed FileNotFoundError as we are not loading from path anymore
 except Exception as e:
-    logger.error(f"CRITICAL: Failed to initialize Firebase Admin SDK from file path in env var: {e}")
+    logger.error(f"CRITICAL: Failed to initialize Firebase Admin SDK from environment variables: {e}", exc_info=True)
 
 # --- FastAPI App Setup (Only if Firebase init seems okay or non-critical) ---
 # You could wrap the rest of the setup in: if firebase_initialized:
