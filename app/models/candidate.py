@@ -19,6 +19,8 @@ class CandidateRead(CandidateBase):
     job_id: UUID # Foreign key relationship
     created_at: datetime.datetime
     updated_at: Optional[datetime.datetime] = None
+    status: str = Field('pending', description="Current status of the candidate screening")
+    score: Optional[float] = Field(None, description="Screening score, if completed")
 
     class Config:
         from_attributes = True # Updated from orm_mode 

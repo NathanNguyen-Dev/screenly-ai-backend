@@ -34,6 +34,7 @@ class JobRead(JobBase):
     id: uuid.UUID = Field(..., description="Unique identifier for the job")
     created_by_user_id: str = Field(..., description="Firebase UID of the user who created the job")
     created_at: datetime = Field(..., description="Timestamp when the job was created")
+    updated_at: Optional[datetime] = Field(None, description="Timestamp of the last update")
     candidate_count: int = Field(0, description="Number of candidates associated with the job")
     average_score: Optional[float] = Field(None, description="Average screening score for candidates")
     screening_link: Optional[str] = Field(None, description="Public link for screening (if applicable)")
@@ -41,6 +42,26 @@ class JobRead(JobBase):
     class Config:
         from_attributes = True
         use_enum_values = True
+
+class JobUpdate(BaseModel):
+    """Model for updating an existing job. All fields are optional."""
+    title: Optional[str] = Field(None, min_length=3, max_length=100)
+    description: Optional[str] = Field(None, max_length=5000) # Allow clearing description
+    location: Optional[str] = Field(None, max_length=100) # Allow clearing location
+    location_type: Optional[LocationType] = None # Allow updating or clearing
+    seniority_level: Optional[SeniorityLevel] = None # Allow updating or clearing
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "title": "Senior Backend Engineer (Remote)",
+                    "description": "Updated role requirements focusing on microservices.",
+                    "location_type": "remote"
+                }
+            ]
+        }
+    }
 
 # Model for updating a job (optional, can add later if needed)
 # class JobUpdate(BaseModel):

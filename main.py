@@ -9,7 +9,7 @@ import firebase_admin
 from firebase_admin import credentials
 
 # Import the auth router
-from app.routers import auth, jobs, candidates
+from app.routers import auth, jobs, candidates, job_questions
 
 # --- Early Initialization & Setup ---
 logging.basicConfig(level=logging.INFO)
@@ -104,6 +104,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(jobs.router) # Include the jobs router
 app.include_router(candidates.router) # Include the candidates router
+app.include_router(job_questions.router) # Include the job_questions router
 
 @app.get("/api/v1/health", tags=["Health"])
 async def health_check():
